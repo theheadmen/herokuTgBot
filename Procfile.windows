@@ -1,1 +1,1 @@
-web: python pluto.py
+bot: python pluto.py
