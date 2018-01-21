@@ -4,6 +4,7 @@ from io import BytesIO
 from PIL import Image
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import logging
+import datetime
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -35,9 +36,12 @@ def get_image():
     ftp.login("electro", "electro")
     ftp.cwd('ELECTRO_L_2')
 
+    now = datetime.datetime.now()
+    now.year
     data = []
     ftp.dir('-t', data.append)
-    newfld = data[0].rsplit(' ',1)[1] #year
+    newfld = str(now.year)
+    #data[0].rsplit(' ',1)[1] #year
     year = newfld
     print(newfld)
     ftp.cwd(newfld)
