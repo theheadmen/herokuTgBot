@@ -1,10 +1,16 @@
 import ftplib
 import urllib.request
+from urllib.request import Request, urlopen
 from io import BytesIO
 from PIL import Image
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import logging
 import datetime
+from lxml import html
+import requests
+from bs4 import BeautifulSoup
+import json
+import sys
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -21,8 +27,31 @@ def start(bot, update):
     bot.send_photo(chat_id = chat_id, photo=open(url, 'rb'))
 
 def help(bot, update):
-    update.message.reply_text('Help!')
+    chat_id = update.message.chat_id
+    messageText = update.message.text.replace("/help", "").strip()
+    if not messageText:
+        messageText = "d3cap"
+    print(messageText)
+    non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd)
+    try:
+        url = 'https://www.artstation.com/users/' + messageText + '/projects.json?page=1'
+        print(url)
+        req_headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36'}
+        request = Request(url, headers=req_headers)
+        r = urlopen(request)
+        jsonArray = json.loads(r.read().decode("utf-8").translate(non_bmp_map))
+        imageUrls = []
+        for imageData in jsonArray['data']:
+            imageUrl = imageData['cover']['small_image_url'].replace("/small/", "/large/")
+            imageUrls.append(imageUrl)
 
+        if len(imageUrls):
+            bot.send_photo(chat_id=chat_id, photo=imageUrls[0])
+        else:
+            update.message.reply_text('Help!')
+    except BaseException as error:
+        print('An exception occurred: {}'.format(error))
+        update.message.reply_text('Some error happen')
 
 def echo(bot, update):
     update.message.reply_text(update.message.text)

@@ -1,1 +1,0 @@
-bot: python pluto.py
